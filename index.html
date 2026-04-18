@@ -1,33 +1,85 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>My First Game</title>
+    <title>Coffee Catch Quest</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; text-align: center; background-color: #f0f2f5; padding-top: 100px; }
-        .game-card { background: white; padding: 30px; border-radius: 15px; display: inline-block; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        h1 { color: #333; }
-        #score { font-size: 48px; font-weight: bold; color: #2ea44f; }
-        button { font-size: 20px; padding: 15px 30px; cursor: pointer; background-color: #2ea44f; color: white; border: none; border-radius: 5px; transition: transform 0.1s; }
-        button:active { transform: scale(0.95); }
+        body { margin: 0; text-align: center; background: #2c3e50; font-family: sans-serif; overflow: hidden; }
+        canvas { background: #ecf0f1; display: block; margin: 20px auto; border: 5px solid #95a5a6; border-radius: 10px; cursor: none; }
+        h1 { color: white; margin-top: 10px; }
+        .ui { color: white; font-size: 20px; }
     </style>
 </head>
 <body>
 
-    <div class="game-card">
-        <h1>Clicker Quest</h1>
-        <p>Score:</p>
-        <div id="score">0</div>
-        <br>
-        <button onclick="addPoint()">CLICK ME!</button>
-    </div>
+    <h1>☕ COFFEE CATCHER ☕</h1>
+    <div class="ui">Score: <span id="score">0</span></div>
+    <canvas id="gameCanvas" width="400" height="500"></canvas>
+    <p class="ui">Move your mouse/finger to catch the coffee!</p>
 
     <script>
-        let count = 0;
-        function addPoint() {
-            count = count + 1;
-            document.getElementById("score").innerText = count;
-        }
-    </script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        const scoreElement = document.getElementById("score");
 
+        let score = 0;
+        let coffeeX = Math.random() * 370;
+        let coffeeY = 0;
+        let coffeeSpeed = 3;
+        let playerX = 175;
+
+        // Track Mouse Movement
+        canvas.addEventListener("mousemove", (e) => {
+            const rect = canvas.getBoundingClientRect();
+            playerX = e.clientX - rect.left - 25;
+        });
+
+        // Track Touch (for phones)
+        canvas.addEventListener("touchmove", (e) => {
+            const rect = canvas.getBoundingClientRect();
+            playerX = e.touches[0].clientX - rect.left - 25;
+            e.preventDefault();
+        }, {passive: false});
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw "Super Coffee Cup" (the falling object)
+            ctx.font = "40px Arial";
+            ctx.fillText("☕", coffeeX, coffeeY);
+
+            // Draw the "Catcher" (the something trying to catch it)
+            // Let's make it a hand or a tray 🖐️
+            ctx.font = "50px Arial";
+            ctx.fillText("🖐️", playerX, 480);
+
+            // Move the coffee
+            coffeeY += coffeeSpeed;
+
+            // Check for Catch (Collision)
+            if (coffeeY > 440 && coffeeY < 480 && coffeeX > playerX - 20 && coffeeX < playerX + 40) {
+                score++;
+                scoreElement.innerText = score;
+                resetCoffee();
+                coffeeSpeed += 0.2; // Make it faster as you win!
+            }
+
+            // Check if Coffee hit the floor
+            if (coffeeY > 500) {
+                score = 0; // Reset score if you miss
+                scoreElement.innerText = score;
+                coffeeSpeed = 3;
+                resetCoffee();
+            }
+
+            requestAnimationFrame(draw);
+        }
+
+        function resetCoffee() {
+            coffeeY = 0;
+            coffeeX = Math.random() * (canvas.width - 40);
+        }
+
+        draw();
+    </script>
 </body>
 </html>
