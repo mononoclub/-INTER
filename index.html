@@ -22,6 +22,7 @@
         const scoreElement = document.getElementById("score");
 
         let score = 0;
+        let gameState = "start";
         let coffeeX = Math.random() * 370;
         let coffeeY = 0;
         let coffeeSpeed = 3;
@@ -38,37 +39,65 @@
             const rect = canvas.getBoundingClientRect();
             playerX = e.touches[0].clientX - rect.left - 25;
             e.preventDefault();
-        }, {passive: false});
+        }, { passive: false });
+
+        // Click to start / restart
+        canvas.addEventListener("click", () => {
+            if (gameState === "start" || gameState === "gameover") {
+                score = 0;
+                scoreElement.innerText = score;
+                coffeeSpeed = 3;
+                resetCoffee();
+                gameState = "playing";
+                draw();
+            }
+        });
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Draw "Super Coffee Cup" (the falling object)
+            if (gameState === "start") {
+                ctx.fillStyle = "black";
+                ctx.font = "30px Arial";
+                ctx.fillText("CLICK TO START", 90, 220);
+                ctx.font = "18px Arial";
+                ctx.fillText("Catch coffee... don't miss 😵", 85, 260);
+                return;
+            }
+
+            if (gameState === "gameover") {
+                ctx.fillStyle = "red";
+                ctx.font = "30px Arial";
+                ctx.fillText("GAME OVER", 110, 220);
+                ctx.font = "18px Arial";
+                ctx.fillText("Click to restart", 120, 260);
+                return;
+            }
+
+            // Draw coffee
             ctx.font = "40px Arial";
             ctx.fillText("☕", coffeeX, coffeeY);
 
-            // Draw the "Catcher" (the something trying to catch it)
-            // Let's make it a hand or a tray 🖐️
+            // Draw catcher
             ctx.font = "50px Arial";
             ctx.fillText("🖐️", playerX, 480);
 
             // Move the coffee
             coffeeY += coffeeSpeed;
 
-            // Check for Catch (Collision)
+            // Check for Catch
             if (coffeeY > 440 && coffeeY < 480 && coffeeX > playerX - 20 && coffeeX < playerX + 40) {
                 score++;
                 scoreElement.innerText = score;
                 resetCoffee();
-                coffeeSpeed += 0.2; // Make it faster as you win!
+                coffeeSpeed += 0.2;
             }
 
-            // Check if Coffee hit the floor
+            // Check if coffee hit the floor
             if (coffeeY > 500) {
-                score = 0; // Reset score if you miss
-                scoreElement.innerText = score;
-                coffeeSpeed = 3;
-                resetCoffee();
+                gameState = "gameover";
+                draw();
+                return;
             }
 
             requestAnimationFrame(draw);
